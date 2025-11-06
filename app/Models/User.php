@@ -7,8 +7,10 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable; // 最好也加上
+use Illuminate\Database\Eloquent\Factories\HasFactory; // 最好也加上
 use Laravel\Sanctum\HasApiTokens;
 
 /**
@@ -31,9 +33,9 @@ use Laravel\Sanctum\HasApiTokens;
  *
  * @package App\Models
  */
-class User extends Model
+class User extends Authenticatable
 {
-	use HasApiTokens;
+	use HasApiTokens, HasFactory, Notifiable;
 
 	protected $table = 'user';
 

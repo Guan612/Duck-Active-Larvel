@@ -16,16 +16,33 @@ class UserController extends Controller
 
         $user = User::where('loginId', $validate['loginId'])->first();
 
-        if ($user && Hash::check($validate['password'], $user->password)) {
-            $user->tokens()->delete(); // 删除所有令牌
-            $token = $user->createToken('auth-token')->plainTextToken;
+        // 1. 从数据库取出（可能被污染的）哈希
+        $passwordFromDb = $user->password;
+
+        dd($passwordFromDb);
+
+        // 2. 强行清理掉所有“控制字符”，特别是 \0
+        //     preg_replace('/[[:cntrl:]]/', '', ...) 的意思就是把所有
+        //     ASCII 0-31 的不可见字符全都删掉。
+        $cleanedHash = preg_replace('/[[:cntrl:]]/', '', $passwordFromDb);
+
+        // 3. (安全检查) 如果清理完变空了，就用回原值
+        $cleanedHash = $cleanedHash ?? $passwordFromDb;
+
+        if (!Hash::check($request->password, $cleanedHash)) {
             return response()->json([
-                'message' => 'Login successful',
-                'access_token' => $token,
-                'token_type' => 'Bearer',
-                'user' => $user
-            ], 200);
+                'message' => 'Invalid credentials'
+            ], 401);
         }
+
+        $user->tokens()->delete();
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login successful',
+            'access_token' => $token,
+            'user' => $user
+        ]);
     }
 
     public function register(RegisterUserRequest $request)
