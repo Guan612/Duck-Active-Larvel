@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
@@ -51,13 +52,17 @@ class UserController extends Controller
         ], 201);
     }
 
-    public function profile(Request $request)
+    public function profile()
     {
-        // 逻辑待实现
-        return ['message' => 'Profile logic not implemented'];
+        $user = User::all();
+        return response()->json(['message' => "Profile logic not implemented", 'user' => $user], 200);
     }
 
-    public function findById(Request $request, $id) {}
+    public function findById(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        return response()->json($user);
+    }
 
     public function edit(Request $request, $id)
     {
@@ -68,7 +73,7 @@ class UserController extends Controller
     public function delete(Request $request, $id)
     {
         // 逻辑待实现
-        return ['message' => "Delete logic for $id not implemented"];
+        $user = User::delete($id);
     }
 
     // (你之前 AI 生成的 adminLogin 和 patch 也写上，
