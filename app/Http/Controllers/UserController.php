@@ -16,20 +16,8 @@ class UserController extends Controller
 
         $user = User::where('loginId', $validate['loginId'])->first();
 
-        // 1. 从数据库取出（可能被污染的）哈希
-        $passwordFromDb = $user->password;
 
-        dd($passwordFromDb);
-
-        // 2. 强行清理掉所有“控制字符”，特别是 \0
-        //     preg_replace('/[[:cntrl:]]/', '', ...) 的意思就是把所有
-        //     ASCII 0-31 的不可见字符全都删掉。
-        $cleanedHash = preg_replace('/[[:cntrl:]]/', '', $passwordFromDb);
-
-        // 3. (安全检查) 如果清理完变空了，就用回原值
-        $cleanedHash = $cleanedHash ?? $passwordFromDb;
-
-        if (!Hash::check($request->password, $cleanedHash)) {
+        if (!Hash::check($request->password, $user->password)) {
             return response()->json([
                 'message' => 'Invalid credentials'
             ], 401);
